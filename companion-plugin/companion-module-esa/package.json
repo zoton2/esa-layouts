@@ -18,17 +18,17 @@
 	"dependencies": {
 		"@companion-module/base": "~1.7.0",
 		"string-similarity": "^4.0.4",
-		"ws": "^8.16.0"
+		"ws": "^8.17.0"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^1.4.2",
+		"@companion-module/tools": "^1.5.0",
 		"@types/string-similarity": "^4.0.2",
 		"@types/ws": "^8.5.10",
-		"@typescript-eslint/eslint-plugin": "^6.20.0",
-		"@typescript-eslint/parser": "^6.20.0",
-		"eslint": "^8.56.0",
+		"@typescript-eslint/eslint-plugin": "^6.21.0",
+		"@typescript-eslint/parser": "^6.21.0",
+		"eslint": "^8.57.0",
 		"eslint-config-airbnb-base": "^15.0.0",
 		"eslint-config-airbnb-typescript": "^17.1.0",
-		"typescript": "^5.3.3"
+		"typescript": "^5.4.5"
 	}
 }
