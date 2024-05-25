@@ -29,7 +29,7 @@ const routes = [
     path: '/swcf_16x9-4p-bingo',
     component: List.L_SWCF_16x9_4p_Bingo,
   }, */
-  {
+  /* {
     name: '(ESAW24) 4:3 1 Player',
     path: '/esaw24-4x3-1p',
     component: List.L_ESAW24_4x3_1p,
@@ -48,7 +48,7 @@ const routes = [
     name: '(ESAW24) Elden Ring Bingo',
     path: '/esaw24-eldenring-bingo',
     component: List.L_ESAW24_EldenRing_Bingo,
-  },
+  }, */
   {
     name: '4:3 1 Player',
     path: '/4x3-1p',
