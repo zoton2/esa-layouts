@@ -156,6 +156,14 @@ export default class extends Vue {
   ) readonly additionalDonations!: AdditionalDonations;
   additionalDonationsCfg = nodecg.bundleConfig.additionalDonations;
 
+  get isNotEsa() {
+    // Assumes if the "shorts" config parameter is an array, it's probably ESA.
+    // Otherwise, check the start of the short.
+    return typeof nodecg.bundleConfig.event.shorts === 'string'
+      ? !nodecg.bundleConfig.event.shorts.startsWith('esa')
+      : false;
+  }
+
   get additionalDonationsMapped() {
     return this.additionalDonationsCfg.map((d) => ({
       key: d.key,
@@ -234,8 +242,7 @@ export default class extends Vue {
   async created(): Promise<void> {
     this.total = this.rawTotal;
     nodecg.listenFor('donationTotalUpdated', (data: { total: number }) => {
-      // If after 10s this hasn't been cleared by a new donation, update the total with it.
-      this.donationTotalTimeout = window.setTimeout(() => {
+      const queueAlert = (showAlert = false) => {
         nodecg.sendMessage('donationAlertsLogging', 'donationTotalTimeout triggered');
         // Double check if the total really needs updating.
         // Also, only queue if alerts are not already
@@ -248,13 +255,21 @@ export default class extends Vue {
           );
           this.alertList.push({
             total: completeTotal,
-            showAlert: false,
+            showAlert,
           });
           if (!this.playingAlerts) this.playNextAlert(true);
         }
-      }, 10 * 1000);
+      };
+      if (this.isNotEsa) {
+        // For non-ESA events (using the old tracker) use the new total as a normal alert.
+        queueAlert(true);
+      } else {
+        // If after 10s this hasn't been cleared by a new donation, update the total with it.
+        this.donationTotalTimeout = window.setTimeout(queueAlert, 10 * 1000);
+      }
     });
     nodecg.listenFor('newDonation', (data: { amount: number }) => {
+      if (this.isNotEsa) return;
       clearTimeout(this.donationTotalTimeout);
       this.alertList.push({
         amount: data.amount,
