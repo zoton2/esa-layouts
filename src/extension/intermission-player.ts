@@ -197,7 +197,11 @@ player.on('playlistEnded', async (early) => {
   if (!early) videoPlayer.value.playlist.length = 0;
   videoPlayer.value.estimatedFinishTimestamp = 0;
   obsData.value.disableTransitioning = false;
-  await changeScene({ scene: config.obs.names.scenes.intermission, force: true });
+  if (obs.findScene(config.obs.names.scenes.commercials)) {
+    await changeScene({ scene: config.obs.names.scenes.commercials, force: true });
+  } else {
+    await changeScene({ scene: config.obs.names.scenes.intermission, force: true });
+  }
 });
 
 player.on('playCommercial', async (item) => {

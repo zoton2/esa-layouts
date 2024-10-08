@@ -133,6 +133,19 @@ mq.evt.on('donationTotalUpdated', (data) => {
       );
       donationTotal.value = total;
     }
+  } else {
+    let total = 0;
+    for (const event of eventInfo) {
+      if (data.event === event.short) {
+        event.total = data.new_total;
+      }
+      total += event.total;
+    }
+    if (donationTotal.value < total) {
+      nodecg().sendMessage('donationTotalUpdated', { total });
+      nodecg().log.debug('[Tracker] Updated donation total received: $%s', total.toFixed(2));
+      donationTotal.value = total;
+    }
   }
 });
 
