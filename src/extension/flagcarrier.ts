@@ -249,10 +249,12 @@ function setup(): void {
         req.body,
         device,
       );
-      return res.status(403).send('Device ID is not allowed to make changes.');
+      res.status(403).send('Device ID is not allowed to make changes.');
+      return;
     }
     if (req.body.group_id !== config.flagcarrier.group) {
-      return res.status(400).send('Group ID supplied not used on this endpoint.');
+      res.status(400).send('Group ID supplied not used on this endpoint.');
+      return;
     }
 
     // clear, login_clear
@@ -263,7 +265,8 @@ function setup(): void {
       nodecg().log.info('[FlagCarrier] Donation reader was cleared (DeviceID: %s)', device);
       // If not also a login command, will respond with this message.
       if (action !== 'login_clear') {
-        return res.send('Donation reader has been cleared.');
+        res.send('Donation reader has been cleared.');
+        return;
       }
     }
 
@@ -282,18 +285,21 @@ function setup(): void {
           str,
           device,
         );
-        return res.send('You\'ve been logged in.');
+        res.send('You\'ve been logged in.');
+        return;
       } catch (err) {
-        return res.send('Error logging in.');
+        res.send('Error logging in.');
+        return;
       }
     }
     // Reject other positions.
     if (req.body.position !== 'reader') {
-      return res.status(400).send('Position not used on this endpoint.');
+      res.status(400).send('Position not used on this endpoint.');
+      return;
     }
 
     // Reject anything else.
-    return res.status(400).send('Request not applicable to this endpoint.');
+    res.status(400).send('Request not applicable to this endpoint.');
   });
 
   nodecg().mount(`/${nodecg().bundleName}`, router);
