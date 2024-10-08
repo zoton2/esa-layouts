@@ -1,0 +1,5 @@
+
+.RunInfoExtra > span[data-v-667a5ea4]:not(:last-child)::after {
+  content: ' /';
+}
+
