@@ -148,7 +148,7 @@ export default class extends Vue {
   total = 0;
   playingAlerts = false;
   showAlert = false;
-  alertText = '$0';
+  alertText = '£0';
   alertList: { total?: number, amount?: number, showAlert: boolean }[] = [];
   donationTotalTimeout: number | undefined;
   @replicantNS.State(
@@ -185,7 +185,7 @@ export default class extends Vue {
   get totalStr(): string {
     // "Reset" value every 10k, specific to ESA Legends 2023.
     const esal23 = nodecg.bundleConfig.event.shorts === 'esal23';
-    return `$${Math.floor(esal23 ? this.total % 10000 : this.total).toLocaleString('en-US', {
+    return `£${Math.floor(esal23 ? this.total % 10000 : this.total).toLocaleString('en-US', {
       maximumFractionDigits: 0,
       minimumIntegerDigits: esal23 && this.total >= 10000 ? 4 : undefined,
     })}`;
