@@ -1,0 +1,25 @@
+
+.PlayerHUD {
+  background-color: black;
+  color: white;
+  text-shadow: 4px 4px 1px black;
+}
+*[class*='Tag'] {
+  font-size: 15vh;
+}
+.TagSuccess {
+  background-color: rgb(0, 177, 15);
+}
+.TagFail, .TagNothing {
+  background-color: rgb(148, 0, 0);
+}
+.DonationsToRead {
+  background-color: green;
+}
+.MessageToRead {
+  background-color: rgb(255, 208, 0);
+  color: black;
+  text-shadow: unset;
+  font-weight: 600;
+}
+
