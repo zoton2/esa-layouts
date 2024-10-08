@@ -39,7 +39,6 @@ jobs:
     # Recheckout both the base and build branches and merge the base into build
     # This can "fail" if the build branch doesn't exist, but we should continue anyway
     - name: (Re)checkout both branches and merge main into build
-      id: checkout
       continue-on-error: true
       run: |
         git checkout ${{ inputs.base_branch || 'master' }}
@@ -84,21 +83,14 @@ jobs:
         npm run clean
         npm run build
 
-    # Start committing newly built files into a temporary commit.
-    - name: Commit built files (1)
-      run: |
-        git add -f dashboard graphics extension
-        git add -f ':(glob)./shared/extension/*/dist/**'
-        git commit -m "Built files" -a --allow-empty
-
-    # Squash the previous 2 commits down for convenience and create the final build commit.
-    # Will only run if the checkout step was successful.
-    # This can "fail" if there are no newly changed/built files, but we should continue anyway.
-    - name: Commit built files (2)
+    # Commit newly built files
+    # This can "fail" if there are no newly changed/built files, but we should continue anyway
+    - name: Commit built files
+      id: commit
       continue-on-error: true
-      if: ${{ steps.checkout.outcome == 'success' }}
       run: |
-        git reset --soft HEAD~2
+        git add -f dashboard extension
+        git add -f ':(glob)./shared/extension/*/dist/**'
         git commit -m "Built files" -a
 
     # Pushes the built files to a specific branch
