@@ -91,8 +91,8 @@ exports.formatSrcomPronouns = formatSrcomPronouns;
  */
 function formatUSD(amount, noCents = false) {
     if (amount >= 100 || noCents) {
-        return `$${Math.floor(amount).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+        return `£${Math.floor(amount).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
     }
-    return `$${amount.toFixed(2)}`;
+    return `£${amount.toFixed(2)}`;
 }
 exports.formatUSD = formatUSD;

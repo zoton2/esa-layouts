@@ -56,26 +56,27 @@
 
 
 /* Each character in the total is in a span; setting width so the numbers appear monospaced. */
-#Total > span[data-v-79520895] {
+#Total > span[data-v-8c347db2] {
   display: inline-block;
   width: 0.45em;
   text-align: center;
 }
-#Total > .Comma[data-v-79520895] {
+#Total > .Comma[data-v-8c347db2] {
   width: 0.22em;
 }
 
 
 /* ESAW24 */
 /* Used to "fix" the omnibar background colour. */
-body {
+/* body { */
   /* Copied from ".bg--darkgrey" */
-  background: #191919;
-}
-#Omnibar {
-  color: white;
+  /* background: #191919;
+} */
+
+/* #Omnibar {
+  color: white; */
   /* Copied from ".bg--dimmedgradient" */
-  background: linear-gradient(90deg, rgba(115, 78, 158, 0.5) 50%,
+  /* background: linear-gradient(90deg, rgba(115, 78, 158, 0.5) 50%,
     rgba(208, 152, 70, 0.5) 100%);
-}
+} */
 

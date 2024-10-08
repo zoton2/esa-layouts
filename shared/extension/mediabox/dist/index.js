@@ -126,6 +126,8 @@ var MediaBox = /** @class */ (function () {
      * @param prize Formatted prize object from the tracker.
      */
     MediaBox.prototype.isPrizeApplicable = function (prize) {
+        if (!(prize === null || prize === void 0 ? void 0 : prize.startTime) && !(prize === null || prize === void 0 ? void 0 : prize.endTime))
+            return true;
         return !!(prize && prize.startTime && prize.endTime
             && Date.now() > prize.startTime && Date.now() < prize.endTime);
     };

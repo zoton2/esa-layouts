@@ -221,10 +221,12 @@ function setup() {
         const action = req.body.action;
         if (allowedDevices.length && !allowedDevices.includes(device)) {
             (0, helpers_1.logError)('[FlagCarrier] Device ID "%s" tried to change users but was denied', req.body, device);
-            return res.status(403).send('Device ID is not allowed to make changes.');
+            res.status(403).send('Device ID is not allowed to make changes.');
+            return;
         }
         if (req.body.group_id !== config.flagcarrier.group) {
-            return res.status(400).send('Group ID supplied not used on this endpoint.');
+            res.status(400).send('Group ID supplied not used on this endpoint.');
+            return;
         }
         // clear, login_clear
         // Unfortunately currently flagcarrier's "clear" command is for an entire group,
@@ -234,7 +236,8 @@ function setup() {
             (0, nodecg_1.get)().log.info('[FlagCarrier] Donation reader was cleared (DeviceID: %s)', device);
             // If not also a login command, will respond with this message.
             if (action !== 'login_clear') {
-                return res.send('Donation reader has been cleared.');
+                res.send('Donation reader has been cleared.');
+                return;
             }
         }
         // Donation Reader: login, login_clear
@@ -250,18 +253,21 @@ function setup() {
                 // donationReader.value = await searchSrcomPronouns(str);
                 // donationReader.value = str; // TODO: RE-ENABLE!
                 (0, nodecg_1.get)().log.info('[FlagCarrier] Donation reader was updated (Name: %s, DeviceID: %s)', str, device);
-                return res.send('You\'ve been logged in.');
+                res.send('You\'ve been logged in.');
+                return;
             }
             catch (err) {
-                return res.send('Error logging in.');
+                res.send('Error logging in.');
+                return;
             }
         }
         // Reject other positions.
         if (req.body.position !== 'reader') {
-            return res.status(400).send('Position not used on this endpoint.');
+            res.status(400).send('Position not used on this endpoint.');
+            return;
         }
         // Reject anything else.
-        return res.status(400).send('Request not applicable to this endpoint.');
+        res.status(400).send('Request not applicable to this endpoint.');
     });
     (0, nodecg_1.get)().mount(`/${(0, nodecg_1.get)().bundleName}`, router);
 }

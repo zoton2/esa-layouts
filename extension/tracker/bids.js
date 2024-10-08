@@ -8,8 +8,9 @@ const needle_1 = __importDefault(require("needle"));
 const _1 = require(".");
 const nodecg_1 = require("../util/nodecg");
 const replicants_1 = require("../util/replicants");
+const utils_1 = __importDefault(require("./utils"));
+const { trackerUrl } = utils_1.default;
 const eventConfig = (0, nodecg_1.get)().bundleConfig.event;
-const config = (0, nodecg_1.get)().bundleConfig.tracker;
 const { useTestData } = (0, nodecg_1.get)().bundleConfig;
 const refreshTime = 30 * 1000; // Get bids every 30s.
 // Processes the response from the API.
@@ -88,8 +89,8 @@ function processRawBids(rawBids) {
 async function updateBids() {
     var _a;
     try {
-        const resp = await (0, needle_1.default)('get', `https://${config.address}/search/?event=${_1.eventInfo[eventConfig.thisEvent - 1].id}`
-            + '&type=allbids&state=OPENED', {
+        const resp = await (0, needle_1.default)('get', trackerUrl(`/search/?event=${_1.eventInfo[eventConfig.thisEvent - 1].id}`
+            + '&type=allbids&state=OPENED'), {
             cookies: (0, _1.getCookies)(),
         });
         if (!resp.statusCode || resp.statusCode >= 300 || resp.statusCode < 200) {

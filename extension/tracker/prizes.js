@@ -8,12 +8,15 @@ const needle_1 = __importDefault(require("needle"));
 const _1 = require(".");
 const nodecg_1 = require("../util/nodecg");
 const replicants_1 = require("../util/replicants");
-const config = (0, nodecg_1.get)().bundleConfig.tracker;
+const utils_1 = __importDefault(require("./utils"));
+const { trackerUrl } = utils_1.default;
 const { useTestData } = (0, nodecg_1.get)().bundleConfig;
 const refreshTime = 60 * 1000; // Get prizes every 60s.
 // Processes the response from the API above.
 function processRawPrizes(rawPrizes) {
-    return rawPrizes.filter((prize) => prize.fields.state === 'ACCEPTED').map((prize) => {
+    // According to BSG code, their tracker doesn't have "state" anymore so ignoring it for now.
+    // return rawPrizes.filter((prize) => prize.fields.state === 'ACCEPTED').map((prize) => {
+    return rawPrizes.map((prize) => {
         const startTime = prize.fields.startrun__starttime || prize.fields.starttime;
         const endTime = prize.fields.endrun__endtime || prize.fields.endtime;
         return {
@@ -21,7 +24,7 @@ function processRawPrizes(rawPrizes) {
             name: prize.fields.name,
             provided: prize.fields.provider || undefined,
             minimumBid: parseFloat(prize.fields.minimumbid),
-            image: prize.fields.image || undefined,
+            image: prize.fields.altimage || prize.fields.image || undefined,
             startTime: startTime ? Date.parse(startTime) : undefined,
             endTime: endTime ? Date.parse(endTime) : undefined,
         };
@@ -32,7 +35,7 @@ function processRawPrizes(rawPrizes) {
 async function updatePrizes() {
     var _a;
     try {
-        const resp = await (0, needle_1.default)('get', `https://${config.address}/search/?event=${_1.eventInfo[0].id}&type=prize&feed=current`, {
+        const resp = await (0, needle_1.default)('get', trackerUrl(`/search/?event=${_1.eventInfo[0].id}&type=prize&feed=current`), {
             cookies: (0, _1.getCookies)(),
         });
         if (!resp.statusCode || resp.statusCode >= 300 || resp.statusCode < 200) {

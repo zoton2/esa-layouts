@@ -8,8 +8,9 @@ const needle_1 = __importDefault(require("needle"));
 const nodecg_1 = require("../util/nodecg");
 const replicants_1 = require("../util/replicants");
 const index_1 = require("./index");
+const utils_1 = __importDefault(require("./utils"));
+const { trackerUrl } = utils_1.default;
 const eventConfig = (0, nodecg_1.get)().bundleConfig.event;
-const config = (0, nodecg_1.get)().bundleConfig.tracker;
 const { useTestData } = (0, nodecg_1.get)().bundleConfig;
 const refreshTime = 10 * 1000; // Get donations every 10s.
 let updateTimeout;
@@ -35,8 +36,8 @@ async function updateToReadDonations() {
     var _a;
     clearTimeout(updateTimeout); // Clear timeout in case this is triggered from a message.
     try {
-        const resp = await (0, needle_1.default)('get', `https://${config.address}/search/?event=${index_1.eventInfo[eventConfig.thisEvent - 1].id}`
-            + '&type=donation&feed=toread', {
+        const resp = await (0, needle_1.default)('get', trackerUrl(`/search/?event=${index_1.eventInfo[eventConfig.thisEvent - 1].id}`
+            + '&type=donation&feed=toread'), {
             cookies: (0, index_1.getCookies)(),
         });
         if (!resp.statusCode || resp.statusCode >= 300 || resp.statusCode < 200) {
@@ -65,8 +66,8 @@ async function updateToReadDonations() {
  */
 async function markDonationAsRead(donationID) {
     try {
-        const resp = await (0, needle_1.default)('get', `https://${config.address}/edit/?type=donation&id=${donationID}`
-            + '&readstate=READ&commentstate=APPROVED', {
+        const resp = await (0, needle_1.default)('get', trackerUrl(`/edit/?type=donation&id=${donationID}`
+            + '&readstate=READ&commentstate=APPROVED'), {
             cookies: (0, index_1.getCookies)(),
         });
         if (resp.statusCode === 200) {

@@ -10,6 +10,8 @@ const needle_1 = __importDefault(require("needle"));
 const nodecg_1 = require("../util/nodecg");
 const rabbitmq_1 = require("../util/rabbitmq");
 const replicants_1 = require("../util/replicants");
+const utils_1 = __importDefault(require("./utils"));
+const { trackerUrl } = utils_1.default;
 exports.eventInfo = [];
 const eventConfig = (0, nodecg_1.get)().bundleConfig.event;
 const config = (0, nodecg_1.get)().bundleConfig.tracker;
@@ -29,7 +31,7 @@ exports.getCookies = getCookies;
  * @param short Short event name in the tracker.
  */
 async function getEventIDFromShort(short) {
-    const resp = await (0, needle_1.default)('get', `https://${config.address}/search/?short=${short}&type=event`, cookies);
+    const resp = await (0, needle_1.default)('get', trackerUrl(`/search/?short=${short}&type=event`), cookies);
     if (!resp.body.length) {
         throw new Error(`Event "${short}" does not exist on the tracker`);
     }
@@ -42,7 +44,7 @@ async function updateDonationTotalFromAPI(init = false) {
     try {
         let total = 0;
         for (const event of exports.eventInfo) {
-            const resp = await (0, needle_1.default)('get', `https://${config.address}/${event.id}?json`);
+            const resp = await (0, needle_1.default)('get', trackerUrl(`/event/${event.short}?json`));
             if (resp.statusCode === 200) {
                 const eventTotal = resp.body.agg.amount ? parseFloat(resp.body.agg.amount) : 0;
                 event.total = eventTotal;
@@ -50,8 +52,10 @@ async function updateDonationTotalFromAPI(init = false) {
             }
         }
         if (init || replicants_1.donationTotal.value < total) {
+            total = (0, lodash_1.round)(total, 2); // May be unneeded, but good for safety.
             (0, nodecg_1.get)().log.info('[Tracker] API donation total changed: $%s', total);
             replicants_1.donationTotal.value = total;
+            (0, nodecg_1.get)().sendMessage('donationTotalUpdated', { total, api: true });
         }
     }
     catch (err) {
@@ -117,6 +121,20 @@ rabbitmq_1.mq.evt.on('donationTotalUpdated', (data) => {
         if (replicants_1.donationTotal.value < total) {
             (0, nodecg_1.get)().sendMessage('donationTotalUpdated', { total });
             (0, nodecg_1.get)().log.debug('[Tracker] Updated donation total received: $%s', total);
+            replicants_1.donationTotal.value = total;
+        }
+    }
+    else {
+        let total = 0;
+        for (const event of exports.eventInfo) {
+            if (data.event === event.short) {
+                event.total = data.new_total;
+            }
+            total += event.total;
+        }
+        if (replicants_1.donationTotal.value < total) {
+            (0, nodecg_1.get)().sendMessage('donationTotalUpdated', { total });
+            (0, nodecg_1.get)().log.debug('[Tracker] Updated donation total received: $%s', total.toFixed(2));
             replicants_1.donationTotal.value = total;
         }
     }
@@ -248,7 +266,7 @@ async function setup() {
         if (!useTestData) {
             // Get initial total from API and set an interval as a fallback.
             updateDonationTotalFromAPI(true);
-            setInterval(updateDonationTotalFromAPI, 60 * 1000);
+            setInterval(updateDonationTotalFromAPI, 30 * 1000);
         }
         else {
             replicants_1.donationTotal.value = exports.eventInfo.reduce((p, e) => p + e.total, 0);

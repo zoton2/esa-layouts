@@ -216,7 +216,12 @@ exports.player.on('playlistEnded', async (early) => {
         replicants_1.videoPlayer.value.playlist.length = 0;
     replicants_1.videoPlayer.value.estimatedFinishTimestamp = 0;
     replicants_1.obsData.value.disableTransitioning = false;
-    await (0, obs_1.changeScene)({ scene: config.obs.names.scenes.intermission, force: true });
+    if (obs_1.default.findScene(config.obs.names.scenes.commercials)) {
+        await (0, obs_1.changeScene)({ scene: config.obs.names.scenes.commercials, force: true });
+    }
+    else {
+        await (0, obs_1.changeScene)({ scene: config.obs.names.scenes.intermission, force: true });
+    }
 });
 exports.player.on('playCommercial', async (item) => {
     try {

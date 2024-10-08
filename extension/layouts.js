@@ -98,8 +98,11 @@ speedcontrol_1.sc.runDataActiveRun.on('change', (newVal, oldVal) => {
         // If there's no old run or we changed to a different run, try to automatically set the layout.
         if (!oldVal || newVal.id !== oldVal.id) {
             // Overwrite code with new ESAW24 layout if 1 player.
+            const isEsa = typeof config.event.shorts === 'string'
+                ? config.event.shorts.startsWith('esa')
+                : !!config.event.shorts.find((s) => s.startsWith('esa'));
             let code = (_a = newVal.customData.layout) === null || _a === void 0 ? void 0 : _a.toLowerCase();
-            if ((code === null || code === void 0 ? void 0 : code.endsWith('-1p')) && !code.startsWith('ds') && !code.startsWith('3ds')) {
+            if (code && isEsa && !code.startsWith('ds') && !code.startsWith('3ds')) {
                 code = `esaw24-${code}`;
             }
             const layout = replicants_1.gameLayouts.value.available.find((l) => l.code.toLowerCase() === code);
