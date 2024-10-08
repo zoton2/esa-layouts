@@ -241,7 +241,7 @@ export default class extends Vue {
 
   async created(): Promise<void> {
     this.total = this.rawTotal;
-    nodecg.listenFor('donationTotalUpdated', (data: { total: number }) => {
+    nodecg.listenFor('donationTotalUpdated', (data: { total: number, api?: boolean }) => {
       const queueAlert = (showAlert = false) => {
         nodecg.sendMessage('donationAlertsLogging', 'donationTotalTimeout triggered');
         // Double check if the total really needs updating.
@@ -262,7 +262,8 @@ export default class extends Vue {
       };
       if (this.isNotEsa) {
         // For non-ESA events (using the old tracker) use the new total as a normal alert.
-        queueAlert(true);
+        // If updated via the API, don't show any actual "alert" and just update the number.
+        queueAlert(!data.api);
       } else {
         // If after 10s this hasn't been cleared by a new donation, update the total with it.
         this.donationTotalTimeout = window.setTimeout(queueAlert, 10 * 1000);

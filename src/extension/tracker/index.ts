@@ -58,8 +58,10 @@ async function updateDonationTotalFromAPI(init = false): Promise<void> {
       }
     }
     if (init || donationTotal.value < total) {
+      total = round(total, 2); // May be unneeded, but good for safety.
       nodecg().log.info('[Tracker] API donation total changed: $%s', total);
       donationTotal.value = total;
+      nodecg().sendMessage('donationTotalUpdated', { total, api: true });
     }
   } catch (err) {
     nodecg().log.warn('[Tracker] Error updating donation total from API');
@@ -290,7 +292,7 @@ async function setup(): Promise<void> {
     if (!useTestData) {
       // Get initial total from API and set an interval as a fallback.
       updateDonationTotalFromAPI(true);
-      setInterval(updateDonationTotalFromAPI, 60 * 1000);
+      setInterval(updateDonationTotalFromAPI, 30 * 1000);
     } else {
       donationTotal.value = eventInfo.reduce((p, e) => p + e.total, 0);
     }
