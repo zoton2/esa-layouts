@@ -89,7 +89,7 @@ jobs:
       id: commit
       continue-on-error: true
       run: |
-        git add -f dashboard extension
+        git add -f dashboard graphics extension
         git add -f ':(glob)./shared/extension/*/dist/**'
         git commit -m "Built files" -a
 
