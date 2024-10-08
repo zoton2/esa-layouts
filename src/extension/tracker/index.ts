@@ -8,6 +8,9 @@ import type { DeepWritable } from 'ts-essentials';
 import { get as nodecg } from '../util/nodecg';
 import { mq } from '../util/rabbitmq';
 import { donationTotal, notableDonations } from '../util/replicants';
+import utils from './utils';
+
+const { trackerUrl } = utils;
 
 export const eventInfo: Tracker.EventInfo[] = [];
 const eventConfig = nodecg().bundleConfig.event;
@@ -31,7 +34,7 @@ export function getCookies(): NeedleResponse['cookies'] {
 async function getEventIDFromShort(short: string): Promise<number> {
   const resp = await needle(
     'get',
-    `https://${config.address}/search/?short=${short}&type=event`,
+    trackerUrl(`/search/?short=${short}&type=event`),
     cookies,
   );
   if (!resp.body.length) {
@@ -47,7 +50,7 @@ async function updateDonationTotalFromAPI(init = false): Promise<void> {
   try {
     let total = 0;
     for (const event of eventInfo) {
-      const resp = await needle('get', `https://${config.address}/${event.id}?json`);
+      const resp = await needle('get', trackerUrl(`/event/${event.short}?json`));
       if (resp.statusCode === 200) {
         const eventTotal = resp.body.agg.amount ? parseFloat(resp.body.agg.amount) : 0;
         event.total = eventTotal;
@@ -55,8 +58,10 @@ async function updateDonationTotalFromAPI(init = false): Promise<void> {
       }
     }
     if (init || donationTotal.value < total) {
+      total = round(total, 2); // May be unneeded, but good for safety.
       nodecg().log.info('[Tracker] API donation total changed: $%s', total);
       donationTotal.value = total;
+      nodecg().sendMessage('donationTotalUpdated', { total, api: true });
     }
   } catch (err) {
     nodecg().log.warn('[Tracker] Error updating donation total from API');
@@ -131,6 +136,19 @@ mq.evt.on('donationTotalUpdated', (data) => {
         '[Tracker] Updated donation total received: $%s',
         total,
       );
+      donationTotal.value = total;
+    }
+  } else {
+    let total = 0;
+    for (const event of eventInfo) {
+      if (data.event === event.short) {
+        event.total = data.new_total;
+      }
+      total += event.total;
+    }
+    if (donationTotal.value < total) {
+      nodecg().sendMessage('donationTotalUpdated', { total });
+      nodecg().log.debug('[Tracker] Updated donation total received: $%s', total.toFixed(2));
       donationTotal.value = total;
     }
   }
@@ -274,7 +292,7 @@ async function setup(): Promise<void> {
     if (!useTestData) {
       // Get initial total from API and set an interval as a fallback.
       updateDonationTotalFromAPI(true);
-      setInterval(updateDonationTotalFromAPI, 60 * 1000);
+      setInterval(updateDonationTotalFromAPI, 30 * 1000);
     } else {
       donationTotal.value = eventInfo.reduce((p, e) => p + e.total, 0);
     }

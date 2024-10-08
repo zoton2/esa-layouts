@@ -66,6 +66,7 @@ export function clone(
  * @param prize Formatted prize object from the tracker.
  */
 export function isPrizeApplicable(prize?: Tracker.FormattedPrize): boolean {
+  if (!prize?.startTime && !prize?.endTime) return true;
   return !!(prize && prize.startTime && prize.endTime
   && Date.now() > prize.startTime && Date.now() < prize.endTime);
 }

@@ -24,5 +24,5 @@ export function msToTimeStr(ms: number): string {
  * @param amount Amount as a integer/float.
  */
 export function formatUSD(amount: number): string {
-  return `$${amount.toFixed(2)}`;
+  return `£${amount.toFixed(2)}`;
 }

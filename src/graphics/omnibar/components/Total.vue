@@ -148,13 +148,21 @@ export default class extends Vue {
   total = 0;
   playingAlerts = false;
   showAlert = false;
-  alertText = '$0';
+  alertText = '£0';
   alertList: { total?: number, amount?: number, showAlert: boolean }[] = [];
   donationTotalTimeout: number | undefined;
   @replicantNS.State(
     (s) => s.reps.additionalDonations,
   ) readonly additionalDonations!: AdditionalDonations;
   additionalDonationsCfg = nodecg.bundleConfig.additionalDonations;
+
+  get isNotEsa() {
+    // Assumes if the "shorts" config parameter is an array, it's probably ESA.
+    // Otherwise, check the start of the short.
+    return typeof nodecg.bundleConfig.event.shorts === 'string'
+      ? !nodecg.bundleConfig.event.shorts.startsWith('esa')
+      : false;
+  }
 
   get additionalDonationsMapped() {
     return this.additionalDonationsCfg.map((d) => ({
@@ -177,7 +185,7 @@ export default class extends Vue {
   get totalStr(): string {
     // "Reset" value every 10k, specific to ESA Legends 2023.
     const esal23 = nodecg.bundleConfig.event.shorts === 'esal23';
-    return `$${Math.floor(esal23 ? this.total % 10000 : this.total).toLocaleString('en-US', {
+    return `£${Math.floor(esal23 ? this.total % 10000 : this.total).toLocaleString('en-US', {
       maximumFractionDigits: 0,
       minimumIntegerDigits: esal23 && this.total >= 10000 ? 4 : undefined,
     })}`;
@@ -233,9 +241,8 @@ export default class extends Vue {
 
   async created(): Promise<void> {
     this.total = this.rawTotal;
-    nodecg.listenFor('donationTotalUpdated', (data: { total: number }) => {
-      // If after 10s this hasn't been cleared by a new donation, update the total with it.
-      this.donationTotalTimeout = window.setTimeout(() => {
+    nodecg.listenFor('donationTotalUpdated', (data: { total: number, api?: boolean }) => {
+      const queueAlert = (showAlert = false) => {
         nodecg.sendMessage('donationAlertsLogging', 'donationTotalTimeout triggered');
         // Double check if the total really needs updating.
         // Also, only queue if alerts are not already
@@ -248,13 +255,22 @@ export default class extends Vue {
           );
           this.alertList.push({
             total: completeTotal,
-            showAlert: false,
+            showAlert,
           });
           if (!this.playingAlerts) this.playNextAlert(true);
         }
-      }, 10 * 1000);
+      };
+      if (this.isNotEsa) {
+        // For non-ESA events (using the old tracker) use the new total as a normal alert.
+        // If updated via the API, don't show any actual "alert" and just update the number.
+        queueAlert(!data.api);
+      } else {
+        // If after 10s this hasn't been cleared by a new donation, update the total with it.
+        this.donationTotalTimeout = window.setTimeout(queueAlert, 10 * 1000);
+      }
     });
     nodecg.listenFor('newDonation', (data: { amount: number }) => {
+      if (this.isNotEsa) return;
       clearTimeout(this.donationTotalTimeout);
       this.alertList.push({
         amount: data.amount,

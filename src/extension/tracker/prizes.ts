@@ -3,14 +3,18 @@ import needle from 'needle';
 import { eventInfo, getCookies } from '.';
 import { get as nodecg } from '../util/nodecg';
 import { prizes } from '../util/replicants';
+import utils from './utils';
 
-const config = nodecg().bundleConfig.tracker;
+const { trackerUrl } = utils;
+
 const { useTestData } = nodecg().bundleConfig;
 const refreshTime = 60 * 1000; // Get prizes every 60s.
 
 // Processes the response from the API above.
 function processRawPrizes(rawPrizes: Tracker.Prize[]): Tracker.FormattedPrize[] {
-  return rawPrizes.filter((prize) => prize.fields.state === 'ACCEPTED').map((prize) => {
+  // According to BSG code, their tracker doesn't have "state" anymore so ignoring it for now.
+  // return rawPrizes.filter((prize) => prize.fields.state === 'ACCEPTED').map((prize) => {
+  return rawPrizes.map((prize) => {
     const startTime = prize.fields.startrun__starttime || prize.fields.starttime;
     const endTime = prize.fields.endrun__endtime || prize.fields.endtime;
     return {
@@ -18,7 +22,7 @@ function processRawPrizes(rawPrizes: Tracker.Prize[]): Tracker.FormattedPrize[] 
       name: prize.fields.name,
       provided: prize.fields.provider || undefined,
       minimumBid: parseFloat(prize.fields.minimumbid),
-      image: prize.fields.image || undefined,
+      image: prize.fields.altimage || prize.fields.image || undefined,
       startTime: startTime ? Date.parse(startTime) : undefined,
       endTime: endTime ? Date.parse(endTime) : undefined,
     };
@@ -31,7 +35,7 @@ async function updatePrizes(): Promise<void> {
   try {
     const resp = await needle(
       'get',
-      `https://${config.address}/search/?event=${eventInfo[0].id}&type=prize&feed=current`,
+      trackerUrl(`/search/?event=${eventInfo[0].id}&type=prize&feed=current`),
       {
         cookies: getCookies(),
       },

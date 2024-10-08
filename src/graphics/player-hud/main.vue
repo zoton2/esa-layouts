@@ -107,7 +107,7 @@ export default class extends Vue {
   therunggMessage: string | null = null;
 
   get largestDonation(): string {
-    return `$${this.donationsToRead
+    return `£${this.donationsToRead
       .reduce((prev, current) => ((prev > current.amount) ? prev : current.amount), 0)
       .toFixed(2)}`;
   }
